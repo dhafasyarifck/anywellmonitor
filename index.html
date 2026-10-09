@@ -139,11 +139,11 @@ D.forEach(o=>o.jb=JBM[o.st][Math.floor(R()*JBM[o.st].length)]);
 /* Pembinaan hanya relevan untuk wellness cukup/buruk; tanggal sesi konsisten dengan status */
 D.forEach(o=>{const d=new Date(),k=o.stt;if(k=='Dijadwalkan')d.setDate(d.getDate()+Math.floor(R()*10)-3);else if(k=='Berjalan')d.setDate(d.getDate()-Math.floor(R()*7));else if(k=='Selesai')d.setDate(d.getDate()-3-Math.floor(R()*18));else return;o.tgl=iso(d)});
 D.forEach(o=>{const r5=x=>Math.round(x*2)/2,sq=(o.h/100)**2;
-/* Tujuan program mengikuti BMI: overweight/obesitas -> turun BB; selain itu -> otot (target BB tidak melewati BMI normal) */
-o.goal=o.b>=C.bm?'lose':'gain';
-o.w0=r5(o.goal=='lose'?o.w+R()*5:o.w-R()*4);
-o.tw=o.goal=='lose'?r5(o.w-2-R()*5):Math.max(o.w,Math.min(r5(o.w+2+R()*4),Math.floor(24.9*sq*2)/2));
-o.kt=Math.round(((o.goal=='lose'?1800:2300)+R()*(o.goal=='lose'?400:500))/50)*50;o.kc=Math.round(o.kt*(.6+R()*.55));
+/* Fokus program: penurunan berat badan. Target tidak boleh membuat BMI turun di bawah ~22 (operator BMI normal/kurus hanya diminta mempertahankan) */
+o.goal='lose';
+o.w0=r5(o.w+R()*5);
+o.tw=Math.min(o.w,Math.max(r5(o.w-2-R()*5),o.b>=C.bm?0:Math.ceil(22*sq*2)/2));
+o.kt=Math.round((1800+R()*400)/50)*50;o.kc=Math.round(o.kt*(.6+R()*.55));
 o.fast=R()<.4;o.fok=o.fast?R()>.3:null;o.wt=Math.round((200+R()*200)/10)*10;o.wk=Math.round(o.wt*(.2+R()*1));o.lv=Math.floor(R()*3);o.str=1+Math.floor(R()*5);o.hr=62+Math.round(R()*28);o.sp=95+Math.floor(R()*5);o.stp=Math.round(2500+R()*9500);
 const T=Math.round(o.last*60);o.slDS=o.sh=='Malam'?Math.round(T*.7):Math.round(T*.08);o.slNS=T-o.slDS;o.band=true;o.sy=Math.round(R()*720);o.ach=[...Array(7)].map(()=>R()>.4);o.ac=o.ach.filter(Boolean).length});D.forEach(hist);D.forEach(an);D.forEach(o=>{if(o.wc=='Baik'){o.stt='Belum';o.tgl=''}});
 D.forEach(o=>{o.hasil='';o.pantau='';o.wl0=null;o.tglS='';if(o.stt!='Selesai')return;const h=R();o.hasil=h<.55?'Membaik':h<.85?'Perlu lanjut':'Rujuk klinik';o.wl0=cl(o.wl-(o.hasil=='Membaik'?4+Math.round(R()*12):o.hasil=='Perlu lanjut'?Math.round(R()*6)-2:-Math.round(R()*5)),10,98);const p=new Date();p.setDate(p.getDate()+(o.hasil=='Membaik'?Math.floor(R()*20)-2:Math.floor(R()*8)-4));o.pantau=iso(p);o.tglS=o.tgl});
@@ -151,7 +151,7 @@ const syT=o=>!o.band?'Terputus':o.sy<60?o.sy+' mnt lalu':o.sy<1440?Math.round(o.
 const dots=o=>`<div style="display:flex;gap:6px;margin-top:8px">${o.ach.map((a,k)=>`<span title="${ds(k+7)}: ${a?'Achieved':'Not achieved'}" style="width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;background:${a?'#2EAD7B':'#E5574B'}">${a?'✓':'✕'}</span>`).join('')}</div>`;
 const appCard=o=>{const pr=Math.max(0,Math.min(100,Math.round(Math.abs(o.w0-o.w)/(Math.abs(o.w0-o.tw)||1)*100))),m=x=>Math.floor(x/60)+' j '+x%60+' mnt',sy=o.sy<60?o.sy+' mnt lalu':o.sy<1440?Math.round(o.sy/60)+' jam lalu':Math.round(o.sy/1440)+' hari lalu',
 bar=(l,v,t,c)=>`<div class="fb" style="grid-template-columns:100px 1fr 110px"><span>${l}</span><u><i style="width:${Math.min(100,t)}%;background:${c}"></i></u><b style="text-align:right">${v}</b></div>`;
-return `<div class="card" style="margin-top:12px"><h3>Data Aplikasi Anywell+</h3><div class="sub">${o.goal=='lose'?'Penurunan Berat Badan':'Pembentukan Masa Otot'} · Workout ${['Pemula','Menengah','Lanjutan'][o.lv]}</div>${bar('Kalori',o.kc+'/'+o.kt,o.kc/o.kt*100,'#0A66EE')}${bar('Berat badan',o.tw==o.w?o.w+' kg (pertahankan)':o.w+' → '+o.tw+' kg',pr,'#2EAD7B')}${bar('Workout',o.wk+'/'+o.wt+' kkal',o.wk/o.wt*100,'#7B6CF6')}
+return `<div class="card" style="margin-top:12px"><h3>Data Aplikasi Anywell+</h3><div class="sub">Penurunan Berat Badan · Workout ${['Pemula','Menengah','Lanjutan'][o.lv]}</div>${bar('Kalori',o.kc+'/'+o.kt,o.kc/o.kt*100,'#0A66EE')}${bar('Berat badan',o.tw==o.w?o.w+' kg (pertahankan)':o.w+' → '+o.tw+' kg',pr,'#2EAD7B')}${bar('Workout',o.wk+'/'+o.wt+' kkal',o.wk/o.wt*100,'#7B6CF6')}
 <div class="row"><div class="card"><small>Puasa</small><b style="font-size:15px">${o.fast?(o.fok?'Sesuai jendela':'Makan di luar jendela'):'Tidak aktif'}</b></div><div class="card"><small>Stres (check-in)</small><b style="font-size:15px;color:${o.str>=4?'#D70015':'inherit'}">${['','Tenang','Rendah','Sedang','Tinggi','Sangat tegang'][o.str]}</b></div><div class="card"><small>Detak jantung · SpO2</small><b style="font-size:15px">${o.hr} bpm · ${o.sp}%</b></div><div class="card"><small>Langkah</small><b style="font-size:15px">${o.stp.toLocaleString('id-ID')}</b></div><div class="card"><small>Tidur siang (DS) / malam (NS)</small><b style="font-size:14px">${m(o.slDS)} / ${m(o.slNS)}</b></div><div class="card"><small>Sync terakhir · ${o.band?'Band terhubung':'Band terputus'}</small><b style="font-size:15px">${sy}</b></div></div>
 <h3 style="font-size:14px">Pencapaian 7 hari · ${o.ac}/7 Achieved</h3>${dots(o)}</div>`};
 function kpx(V){const S=V.filter(o=>o.str>=4),a=Math.round(avg(V.map(o=>o.ac))/7*100),k=(t,b,u,c,f)=>`<div class="card k cl" onclick="${f}"><small>${t}</small><b style="color:${c}">${b}</b><span>${u}</span></div>`;
@@ -247,7 +247,7 @@ const FLD={Unfit:'Tidak layak bekerja. Istirahat dulu dan lapor ke atasan atau t
 function temuan(o){const L=[];
 L.push(`Tidur 7 malam terakhir rata-rata <b>${f1(o.a7)} j</b> (batas ${f1(C.sl)} j); <b>${o.n6} dari 7</b> malam di bawah batas${o.tr>.3?`, turun ${f1(o.tr)} j dari minggu sebelumnya`:o.tr<-.3?`, naik ${f1(-o.tr)} j dari minggu sebelumnya`:', stabil dibanding minggu sebelumnya'}.`);
 L.push(`Tidur semalam <b>${f1(o.last)} j</b> → ${FL[o.fit]}${FLD[o.fit]?': '+FLD[o.fit]:''}`);
-L.push(`BMI <b>${f1(o.b)}</b> (${o.bk}); program ${o.goal=='lose'?'penurunan berat':'pembentukan otot'}, berat ${o.w} kg → target ${o.tw} kg.`);
+L.push(`BMI <b>${f1(o.b)}</b> (${o.bk}); program penurunan berat, berat ${o.w} kg → ${o.tw==o.w?'pertahankan di '+o.w+' kg (BMI sudah mendekati batas bawah normal)':'target '+o.tw+' kg'}.`);
 L.push(`Program ${o.ac}/7 hari Achieved${low(o)?' (di bawah target '+C.ac+' hari)':''}; stres level ${o.str}/5${o.str>=4?' (tinggi)':''}.`);
 if(o.sh=='Malam')L.push(`Shift malam: tidur semalam ${Math.floor(o.slDS/60)} j ${o.slDS%60} mnt di siang hari (DS) dan ${Math.floor(o.slNS/60)} j ${o.slNS%60} mnt di malam hari (NS).`);
 return '<ul style="margin:8px 0 0;padding-left:18px;line-height:1.6">'+L.map(x=>'<li>'+x+'</li>').join('')+'</ul>'}
@@ -274,11 +274,8 @@ $('#ip').innerHTML=`<div class="lh"><h2>${t}</h2><button class="bt g" onclick="c
 const WC={Buruk:'#D70015',Cukup:'#FF9F0A',Baik:'#248A3D'},wst=(o,m)=>`<span class="tag w-${o.wc}">${m==1?'Wellness '+o.wl+' · '+o.wc:m==2?o.wl:o.wl+' · '+o.wc}</span>${IB('wl',o)}`;
 function wlx(V){const B=V.filter(o=>o.wc=='Buruk').sort((a,b)=>a.wl-b.wl),G=V.filter(o=>o.wc=='Baik').sort((a,b)=>b.wl-a.wl),
 row=o=>`<div class="ar" onclick="open_('${o.id}')"><div><b>${o.n}</b><small>${o.jb} · ${o.st}</small></div><div class="rt">${wst(o)}<small>Tidur ${f1(o.a7)} j · BMI ${f1(o.b)}</small></div></div>`,
-box=(t,s,a,k,c)=>`<div class="card"><div class="lh" style="margin-bottom:6px"><div><h3 style="color:${c}">${t}</h3><div class="sub" style="margin:2px 0 0">${s}</div></div><button class="bt g" onclick="lst('${k}')">Lihat semua (${a.length})</button></div>${a.slice(0,5).map(row).join('')||'<div class="em">Tidak ada operator pada kategori ini.</div>'}</div>`,
-M=[['Jumlah operator',a=>a.length],['Rata-rata Wellness Score',a=>Math.round(avg(a.map(o=>o.wl)))],['Rata-rata tidur 7 malam',a=>f1(avg(a.map(o=>o.a7)))+' j'],['Rata-rata malam kurang tidur (dari 7)',a=>f1(avg(a.map(o=>o.n6)))],['Rata-rata BMI',a=>f1(avg(a.map(o=>o.b)))],['Kepatuhan program',a=>Math.round(avg(a.map(o=>o.ac))/7*100)+'%'],['Rata-rata level stres',a=>f1(avg(a.map(o=>o.str)))+' / 5'],['Cross-check Tidur + BMI',a=>a.filter(o=>o.x=='Tidur + BMI').length],['Operator shift malam',a=>Math.round(a.filter(o=>o.sh=='Malam').length/a.length*100)+'%']],
-v=(a,f,i)=>a.length||i==0?f(a):'-';
-$('#wl').innerHTML=`<div class="gw">${box('Wellness buruk','Skor < '+C.wp+', urut terendah',B,'wb',WC.Buruk)}${box('Wellness baik','Skor ≥ '+C.wg+', urut tertinggi',G,'wg',WC.Baik)}</div>
-<div class="card" style="margin-bottom:12px"><h3>Perbandingan: wellness buruk vs baik</h3><div class="sub">Rata-rata indikator pada tiap kelompok, untuk melihat apa yang membedakan keduanya.</div><div class="tw" style="max-height:none"><table class="st"><tr><th>Indikator</th><th style="color:${WC.Buruk}">Wellness Buruk</th><th style="color:${WC.Baik}">Wellness Baik</th></tr>${M.map(([l,f])=>`<tr><td>${l}</td><td><b>${v(B,f,0)}</b></td><td><b>${v(G,f,0)}</b></td></tr>`).join('')}</table></div></div>`}
+box=(t,s,a,k,c)=>`<div class="card"><div class="lh" style="margin-bottom:6px"><div><h3 style="color:${c}">${t}</h3><div class="sub" style="margin:2px 0 0">${s}</div></div><button class="bt g" onclick="lst('${k}')">Lihat semua (${a.length})</button></div>${a.slice(0,5).map(row).join('')||'<div class="em">Tidak ada operator pada kategori ini.</div>'}</div>`;
+$('#wl').innerHTML=`<div class="gw">${box('Wellness buruk','Skor < '+C.wp+', urut terendah',B,'wb',WC.Buruk)}${box('Wellness baik','Skor ≥ '+C.wg+', urut tertinggi',G,'wg',WC.Baik)}</div>`}
 
 const LSK='aw_shlp_pembinaan',fmt=t=>new Date(t).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function savePb(){try{const m={};D.forEach(o=>{if(o.log&&o.log.length)m[o.id]={stt:o.stt,tgl:o.tgl,hasil:o.hasil||'',pantau:o.pantau||'',wl0:o.wl0??null,tglS:o.tglS||'',log:o.log}});localStorage.setItem(LSK,JSON.stringify(m))}catch(e){}}
